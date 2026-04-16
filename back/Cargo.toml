@@ -1,0 +1,10 @@
+[package]
+name = "tvl-live-back"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.9"
+serde = { version = "1.0.228", features = ["serde_derive"] }
+serde_json = "1.0.149"
+tokio = { version = "1.52.0", features = ["tokio-macros", "rt-multi-thread"] }
