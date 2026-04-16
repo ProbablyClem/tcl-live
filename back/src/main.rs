@@ -1,18 +1,33 @@
-use axum::{Json, Router, routing::get};
+use axum::{Json, Router, extract::State, routing::get};
 
-use crate::positions::Positions;
+use crate::{
+    config::Config,
+    env::Env,
+    positions::{Positions, compute_positions},
+};
+mod config;
+mod env;
 mod positions;
+mod tcl;
 
 #[tokio::main]
 async fn main() {
-    // build our application with a single route
-    let app = Router::new().route("/", get(positions));
+    let _ = dotenvy::dotenv_override();
+    let env = Env::load();
+    let config = Config::from(env);
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let app = Router::new()
+        .route("/", get(positions_handler))
+        .with_state(config.clone());
+
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.env.port.clone()))
+        .await
+        .unwrap();
+    println!("Listening on http://0.0.0.0:{}", config.env.port);
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn positions() -> Json<Positions> {
-    Json(Positions {})
+async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
+    let passages = tcl::fetch_passages(config).await;
+    Json(compute_positions(passages))
 }
