@@ -1,7 +1,8 @@
+use crate::Config;
+use crate::tcl::tcl_date_utils::{self, parse_tcl_date};
+use chrono::NaiveDateTime;
 use fixture_rs::Fixture;
 use serde::Deserialize;
-
-use crate::Config;
 
 const PASSAGE_URL: &str = "https://data.grandlyon.com/fr/datapusher/ws/rdata/tcl_sytral.tclpassagearret/all.json?maxfeatures=-1&filename=prochains-passages-reseau-transports-commun-lyonnais-rhonexpress-disponibilites-temps-reel&start=1";
 
@@ -16,8 +17,8 @@ pub struct Passage {
     pub ligne: String,
     pub direction: String,
     pub coursetheorique: String,
-    pub heurepassage: String,
-    pub last_update_fme: String,
+    #[serde(with = "tcl_date_utils")]
+    pub heurepassage: NaiveDateTime,
 }
 
 impl Fixture for Passage {
@@ -27,8 +28,7 @@ impl Fixture for Passage {
             ligne: "A".to_string(),
             direction: "Perrache".to_string(),
             coursetheorique: "31_31B-023AT_00601030".to_string(),
-            heurepassage: "2026-04-16 18:31:14".to_string(),
-            last_update_fme: "2026-04-16 18:31:01".to_string(),
+            heurepassage: parse_tcl_date("2026-04-16 18:31:14").unwrap(),
         }
     }
 }

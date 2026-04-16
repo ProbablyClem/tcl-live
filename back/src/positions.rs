@@ -1,13 +1,11 @@
-use chrono::NaiveDateTime;
 use serde::Serialize;
 use std::collections::HashMap;
 
 use crate::tcl::Passage;
-
 const METRO_LINES: &[&str] = &["A", "B", "C", "D"];
 
 #[derive(Serialize)]
-pub struct MetroPosition {
+pub struct Position {
     pub trip_id: String,
     pub line: String,
     pub direction: String,
@@ -20,20 +18,10 @@ pub struct MetroPosition {
 
 #[derive(Serialize)]
 pub struct Positions {
-    pub snapshot_time: String,
-    pub positions: Vec<MetroPosition>,
-}
-
-fn parse_dt(s: &str) -> Option<NaiveDateTime> {
-    NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok()
+    pub positions: Vec<Position>,
 }
 
 pub fn compute_positions(passages: Vec<Passage>) -> Positions {
-    let snapshot_time = passages
-        .first()
-        .map(|e| e.last_update_fme.clone())
-        .unwrap_or_default();
-
     // Use local time so it matches the naive timestamps in the API (Paris local time)
     let now = chrono::Local::now().naive_local();
 
@@ -47,7 +35,7 @@ pub fn compute_positions(passages: Vec<Passage>) -> Positions {
         }
     }
 
-    let mut positions: Vec<MetroPosition> = trips
+    let mut positions: Vec<Position> = trips
         .into_iter()
         .filter_map(|(trip_id, mut stops)| {
             stops.sort_by(|a, b| a.heurepassage.cmp(&b.heurepassage));
@@ -56,8 +44,7 @@ pub fn compute_positions(passages: Vec<Passage>) -> Positions {
             let direction = stops[0].direction.clone();
 
             // Split into past and future stops relative to now
-            let pivot =
-                stops.partition_point(|s| parse_dt(&s.heurepassage).map_or(false, |t| t <= now));
+            let pivot = stops.partition_point(|s| s.heurepassage <= now);
 
             if pivot == 0 || pivot == stops.len() {
                 return None; // Train hasn't started or already finished
@@ -66,8 +53,8 @@ pub fn compute_positions(passages: Vec<Passage>) -> Positions {
             let prev = &stops[pivot - 1];
             let next = &stops[pivot];
 
-            let prev_dt = parse_dt(&prev.heurepassage)?;
-            let next_dt = parse_dt(&next.heurepassage)?;
+            let prev_dt = prev.heurepassage;
+            let next_dt = next.heurepassage;
 
             let elapsed = (now - prev_dt).num_seconds();
             let interval = (next_dt - prev_dt).num_seconds();
@@ -79,7 +66,7 @@ pub fn compute_positions(passages: Vec<Passage>) -> Positions {
                 0.0
             };
 
-            Some(MetroPosition {
+            Some(Position {
                 trip_id,
                 line,
                 direction,
@@ -93,8 +80,5 @@ pub fn compute_positions(passages: Vec<Passage>) -> Positions {
 
     positions.sort_by(|a, b| a.line.cmp(&b.line).then(a.trip_id.cmp(&b.trip_id)));
 
-    Positions {
-        snapshot_time,
-        positions,
-    }
+    Positions { positions }
 }
