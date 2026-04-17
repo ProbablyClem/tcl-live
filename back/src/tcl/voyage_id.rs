@@ -6,12 +6,6 @@ pub struct VoyageId {
     id: String,
 }
 
-impl VoyageId {
-    pub fn value(&self) -> &str {
-        &self.id
-    }
-}
-
 impl<'de> Deserialize<'de> for VoyageId {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

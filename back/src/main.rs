@@ -30,11 +30,7 @@ async fn main() {
 }
 
 async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
-    let passages = tcl::fetch_passages(config)
-        .await
-        .into_iter()
-        .filter(|passage| tcl::METRO_LINES.contains(&passage.ligne.as_str()))
-        .collect();
+    let passages = tcl::fetch_passages(config).await;
     let voyages = group_by_voyage(passages);
     Json(compute_positions(voyages))
 }

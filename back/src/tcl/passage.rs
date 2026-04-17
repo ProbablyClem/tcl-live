@@ -1,10 +1,10 @@
 use crate::Config;
+use crate::tcl::METRO_LINES;
 use crate::tcl::tcl_date_utils::{self, parse_tcl_date};
 use crate::tcl::voyage_id::VoyageId;
 use chrono::NaiveDateTime;
 use fixture_rs::Fixture;
 use serde::Deserialize;
-
 const PASSAGE_URL: &str = "https://data.grandlyon.com/fr/datapusher/ws/rdata/tcl_sytral.tclpassagearret/all.json?maxfeatures=-1&filename=prochains-passages-reseau-transports-commun-lyonnais-rhonexpress-disponibilites-temps-reel&start=1";
 
 #[derive(Deserialize, Fixture, PartialEq, Eq, Debug)]
@@ -45,7 +45,12 @@ pub async fn fetch_passages(conf: Config) -> Vec<Passage> {
         .json()
         .await
         .expect("Failed to parse API response");
-    response.values
+
+    response
+        .values
+        .into_iter()
+        .filter(|passage| METRO_LINES.contains(&passage.ligne.as_str()))
+        .collect()
 }
 
 #[cfg(test)]
