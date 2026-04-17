@@ -1,5 +1,6 @@
 use crate::Config;
 use crate::tcl::tcl_date_utils::{self, parse_tcl_date};
+use crate::tcl::voyage_id::VoyageId;
 use chrono::NaiveDateTime;
 use fixture_rs::Fixture;
 use serde::Deserialize;
@@ -11,12 +12,13 @@ pub struct PassageApiResponse {
     pub values: Vec<Passage>,
 }
 
-#[derive(Deserialize, PartialEq, Eq, Debug)]
+#[derive(Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Passage {
     pub id: u64,
     pub ligne: String,
     pub direction: String,
-    pub coursetheorique: String,
+    #[serde(rename = "coursetheorique")]
+    pub voyage_id: VoyageId,
     #[serde(with = "tcl_date_utils")]
     pub heurepassage: NaiveDateTime,
 }
@@ -27,7 +29,7 @@ impl Fixture for Passage {
             id: 1,
             ligne: "A".to_string(),
             direction: "Perrache".to_string(),
-            coursetheorique: "31_31B-023AT_00601030".to_string(),
+            voyage_id: VoyageId::fixture(),
             heurepassage: parse_tcl_date("2026-04-16 18:31:14").unwrap(),
         }
     }

@@ -4,11 +4,13 @@ use crate::{
     config::Config,
     env::Env,
     positions::{Positions, compute_positions},
+    voyages::group_by_voyage,
 };
 mod config;
 mod env;
 mod positions;
 mod tcl;
+mod voyages;
 
 #[tokio::main]
 async fn main() {
@@ -28,6 +30,11 @@ async fn main() {
 }
 
 async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
-    let passages = tcl::fetch_passages(config).await;
-    Json(compute_positions(passages))
+    let passages = tcl::fetch_passages(config)
+        .await
+        .into_iter()
+        .filter(|passage| tcl::METRO_LINES.contains(&passage.ligne.as_str()))
+        .collect();
+    let voyages = group_by_voyage(passages);
+    Json(compute_positions(voyages))
 }
