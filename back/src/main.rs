@@ -4,11 +4,13 @@ use crate::{
     config::Config,
     env::Env,
     positions::{Positions, compute_positions},
+    voyages::group_by_voyage,
 };
 mod config;
 mod env;
 mod positions;
 mod tcl;
+mod voyages;
 
 #[tokio::main]
 async fn main() {
@@ -17,7 +19,7 @@ async fn main() {
     let config = Config::from(env);
 
     let app = Router::new()
-        .route("/", get(positions_handler))
+        .route("/api/positions", get(positions_handler))
         .with_state(config.clone());
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.env.port.clone()))
@@ -29,5 +31,6 @@ async fn main() {
 
 async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
     let passages = tcl::fetch_passages(config).await;
-    Json(compute_positions(passages))
+    let voyages = group_by_voyage(passages);
+    Json(compute_positions(voyages))
 }
