@@ -1,4 +1,5 @@
-use axum::{Json, Router, extract::State, routing::get};
+use axum::{Json, Router, extract::State, response::Html, routing::get};
+use tower_http::services::ServeDir;
 
 use crate::{
     config::Config,
@@ -19,14 +20,20 @@ async fn main() {
     let config = Config::from(env);
 
     let app = Router::new()
+        .route("/", get(index))
         .route("/api/positions", get(positions_handler))
-        .with_state(config.clone());
+        .with_state(config.clone())
+        .nest_service("/pkg", ServeDir::new("../static/pkg"));
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.env.port.clone()))
         .await
         .unwrap();
     println!("Listening on http://0.0.0.0:{}", config.env.port);
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn index() -> Html<&'static str> {
+    Html(include_str!("../../static/index.html"))
 }
 
 async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
