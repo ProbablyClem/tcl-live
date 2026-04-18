@@ -19,7 +19,7 @@ async fn main() {
     let config = Config::from(env);
 
     let app = Router::new()
-        .route("/", get(positions_handler))
+        .route("/api/positions", get(positions_handler))
         .with_state(config.clone());
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.env.port.clone()))

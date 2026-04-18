@@ -5,7 +5,8 @@ use crate::tcl::voyage_id::VoyageId;
 use chrono::NaiveDateTime;
 use fixture_rs::Fixture;
 use serde::Deserialize;
-const PASSAGE_URL: &str = "https://data.grandlyon.com/fr/datapusher/ws/rdata/tcl_sytral.tclpassagearret/all.json?maxfeatures=-1&filename=prochains-passages-reseau-transports-commun-lyonnais-rhonexpress-disponibilites-temps-reel&start=1";
+
+const PASSAGE_URL: &str = "https://data.grandlyon.com/fr/datapusher/ws/rdata/tcl_sytral.tclpassagearret/all.json?maxfeatures=-1&start=1&field=ligne&value=";
 
 #[derive(Deserialize, Fixture, PartialEq, Eq, Debug)]
 pub struct PassageApiResponse {
@@ -36,21 +37,35 @@ impl Fixture for Passage {
 }
 
 pub async fn fetch_passages(conf: Config) -> Vec<Passage> {
-    let response: PassageApiResponse = reqwest::Client::new()
-        .get(PASSAGE_URL)
-        .basic_auth(conf.env.user, Some(conf.env.password))
-        .send()
-        .await
-        .expect("API request failed")
-        .json()
-        .await
-        .expect("Failed to parse API response");
+    let client = reqwest::Client::new();
+    let mut tasks = tokio::task::JoinSet::new();
 
-    response
-        .values
-        .into_iter()
-        .filter(|passage| METRO_LINES.contains(&passage.ligne.as_str()))
-        .collect()
+    // We can filter by ligne, but we can pass multiples values
+    // We need make multiples request with the lignes one by one
+    // Reduced the fetch from 12s to 1s
+    // We use tokio to run the queries in parralel and then we join
+    for &ligne in METRO_LINES {
+        let client = client.clone();
+        let conf = conf.clone();
+        tasks.spawn(async move {
+            client
+                .get(format!("{PASSAGE_URL}{ligne}"))
+                .basic_auth(conf.env.user, Some(conf.env.password))
+                .send()
+                .await
+                .expect("API request failed")
+                .json::<PassageApiResponse>()
+                .await
+                .expect("Failed to parse API response")
+                .values
+        });
+    }
+
+    let mut passages = Vec::new();
+    while let Some(result) = tasks.join_next().await {
+        passages.extend(result.expect("task panicked"));
+    }
+    passages
 }
 
 #[cfg(test)]
