@@ -24,7 +24,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/api/positions", get(positions_handler))
-        .route("/api/lignes", get(arrets_handler))
+        .route("/api/lignes", get(lignes_handler))
         .with_state(config.clone())
         .nest_service("/pkg", ServeDir::new("../static/pkg"));
 
@@ -45,7 +45,7 @@ async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
     Json(compute_positions(voyages))
 }
 
-async fn arrets_handler() -> Json<Vec<Ligne>> {
+async fn lignes_handler() -> Json<Vec<Ligne>> {
     let arrets = tcl::fetch_arrets().await;
     Json(ligne::group_by_ligne(arrets))
 }

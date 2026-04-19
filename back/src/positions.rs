@@ -7,11 +7,11 @@ pub struct Position {
     pub voyage_id: VoyageId,
     pub ligne: String,
     pub direction: String,
-    pub prev_stop_id: u64,
-    pub next_stop_id: u64,
-    /// Progression between prev and next stop, from 0.0 to 1.0
+    pub prev_arret_id: String,
+    pub next_arret_id: String,
+    /// Progression between prev and next arret, from 0.0 to 1.0
     pub progress: f64,
-    pub next_stop_in_secs: i64,
+    pub next_arret_in_secs: i64,
 }
 
 #[derive(Serialize)]
@@ -57,7 +57,7 @@ fn compute_voyage_position_at(mut voyage: Voyage, now: NaiveDateTime) -> Option<
 
     let elapsed = (now - prev_dt).num_seconds();
     let interval = (next_dt - prev_dt).num_seconds();
-    let next_stop_in_secs = (next_dt - now).num_seconds();
+    let next_arret_in_secs = (next_dt - now).num_seconds();
 
     let progress = if interval > 0 {
         (elapsed as f64 / interval as f64).clamp(0.0, 1.0)
@@ -69,10 +69,10 @@ fn compute_voyage_position_at(mut voyage: Voyage, now: NaiveDateTime) -> Option<
         voyage_id: voyage.voyage_id,
         ligne: voyage.ligne,
         direction: voyage.direction,
-        prev_stop_id: prev.id,
-        next_stop_id: next.id,
+        prev_arret_id: prev.id_arret_destination.clone(),
+        next_arret_id: next.id_arret_destination.clone(),
         progress,
-        next_stop_in_secs,
+        next_arret_in_secs,
     })
 }
 
@@ -91,6 +91,7 @@ mod tests {
             id,
             ligne: "A".to_string(),
             direction: "Perrache".to_string(),
+            id_arret_destination: id.to_string(),
             voyage_id: VoyageId::fixture(),
             heurepassage: t(time_str),
         }
@@ -118,10 +119,10 @@ mod tests {
             make_passage(2, "2026-01-01 10:02:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:01:00")).unwrap();
-        assert_eq!(pos.prev_stop_id, 1);
-        assert_eq!(pos.next_stop_id, 2);
+        assert_eq!(pos.prev_arret_id, "1");
+        assert_eq!(pos.next_arret_id, "2");
         assert!((pos.progress - 0.5).abs() < 1e-9);
-        assert_eq!(pos.next_stop_in_secs, 60);
+        assert_eq!(pos.next_arret_in_secs, 60);
     }
 
     #[test]
@@ -132,7 +133,7 @@ mod tests {
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:00:00")).unwrap();
         assert!((pos.progress - 0.0).abs() < 1e-9);
-        assert_eq!(pos.next_stop_in_secs, 120);
+        assert_eq!(pos.next_arret_in_secs, 120);
     }
 
     #[test]
@@ -162,7 +163,7 @@ mod tests {
             make_passage(2, "2026-01-01 10:02:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:01:59")).unwrap();
-        assert_eq!(pos.next_stop_in_secs, 1);
+        assert_eq!(pos.next_arret_in_secs, 1);
         assert!((pos.progress - 119.0 / 120.0).abs() < 1e-9);
     }
 
@@ -209,8 +210,8 @@ mod tests {
             make_passage(2, "2026-01-01 10:02:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:01:00")).unwrap();
-        assert_eq!(pos.prev_stop_id, 1);
-        assert_eq!(pos.next_stop_id, 2);
+        assert_eq!(pos.prev_arret_id, "1");
+        assert_eq!(pos.next_arret_id, "2");
     }
 
     #[test]
@@ -221,8 +222,8 @@ mod tests {
             make_passage(3, "2026-01-01 10:04:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:01:00")).unwrap();
-        assert_eq!(pos.prev_stop_id, 1);
-        assert_eq!(pos.next_stop_id, 2);
+        assert_eq!(pos.prev_arret_id, "1");
+        assert_eq!(pos.next_arret_id, "2");
         assert!((pos.progress - 0.5).abs() < 1e-9);
     }
 
@@ -234,8 +235,8 @@ mod tests {
             make_passage(3, "2026-01-01 10:04:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:03:00")).unwrap();
-        assert_eq!(pos.prev_stop_id, 2);
-        assert_eq!(pos.next_stop_id, 3);
+        assert_eq!(pos.prev_arret_id, "2");
+        assert_eq!(pos.next_arret_id, "3");
         assert!((pos.progress - 0.5).abs() < 1e-9);
     }
 
@@ -248,8 +249,8 @@ mod tests {
             make_passage(3, "2026-01-01 10:04:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:02:00")).unwrap();
-        assert_eq!(pos.prev_stop_id, 2);
-        assert_eq!(pos.next_stop_id, 3);
+        assert_eq!(pos.prev_arret_id, "2");
+        assert_eq!(pos.next_arret_id, "3");
         assert!((pos.progress - 0.0).abs() < 1e-9);
     }
 
@@ -267,30 +268,30 @@ mod tests {
     }
 
     #[test]
-    fn test_next_stop_in_secs_three_minutes() {
+    fn test_next_arret_in_secs_three_minutes() {
         let v = make_voyage(vec![
             make_passage(1, "2026-01-01 10:00:00"),
             make_passage(2, "2026-01-01 10:05:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:02:00")).unwrap();
-        assert_eq!(pos.next_stop_in_secs, 180);
+        assert_eq!(pos.next_arret_in_secs, 180);
     }
 
     #[test]
-    fn test_next_stop_in_secs_decreases_over_time() {
+    fn test_next_arret_in_secs_decreases_over_time() {
         let passages = || {
             vec![
                 make_passage(1, "2026-01-01 10:00:00"),
                 make_passage(2, "2026-01-01 10:02:00"),
             ]
         };
-        let early = compute_voyage_position_at(make_voyage(passages()), t("2026-01-01 10:00:30"))
-            .unwrap();
-        let late = compute_voyage_position_at(make_voyage(passages()), t("2026-01-01 10:01:30"))
-            .unwrap();
-        assert_eq!(early.next_stop_in_secs, 90);
-        assert_eq!(late.next_stop_in_secs, 30);
-        assert!(early.next_stop_in_secs > late.next_stop_in_secs);
+        let early =
+            compute_voyage_position_at(make_voyage(passages()), t("2026-01-01 10:00:30")).unwrap();
+        let late =
+            compute_voyage_position_at(make_voyage(passages()), t("2026-01-01 10:01:30")).unwrap();
+        assert_eq!(early.next_arret_in_secs, 90);
+        assert_eq!(late.next_arret_in_secs, 30);
+        assert!(early.next_arret_in_secs > late.next_arret_in_secs);
     }
 
     #[test]
