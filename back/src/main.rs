@@ -4,11 +4,13 @@ use tower_http::services::ServeDir;
 use crate::{
     config::Config,
     env::Env,
+    ligne::Ligne,
     positions::{Positions, compute_positions},
     voyages::group_by_voyage,
 };
 mod config;
 mod env;
+mod ligne;
 mod positions;
 mod tcl;
 mod voyages;
@@ -22,6 +24,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/api/positions", get(positions_handler))
+        .route("/api/arrets", get(arrets_handler))
         .with_state(config.clone())
         .nest_service("/pkg", ServeDir::new("../static/pkg"));
 
@@ -40,4 +43,9 @@ async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
     let passages = tcl::fetch_passages(config).await;
     let voyages = group_by_voyage(passages);
     Json(compute_positions(voyages))
+}
+
+async fn arrets_handler() -> Json<Vec<Ligne>> {
+    let arrets = tcl::fetch_arrets().await;
+    Json(ligne::group_by_ligne(arrets))
 }

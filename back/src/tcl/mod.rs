@@ -1,7 +1,9 @@
+pub mod arret;
 pub mod passage;
 mod tcl_date_utils;
 pub mod voyage_id;
 
+pub use arret::*;
 pub use passage::*;
 pub use voyage_id::*;
 
