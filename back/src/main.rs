@@ -24,7 +24,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/api/positions", get(positions_handler))
-        .route("/api/arrets", get(arrets_handler))
+        .route("/api/lignes", get(arrets_handler))
         .with_state(config.clone())
         .nest_service("/pkg", ServeDir::new("../static/pkg"));
 
