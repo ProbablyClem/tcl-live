@@ -1,22 +1,33 @@
+use crate::panic;
+use crate::render;
 use crate::response::{Ligne, Position, Positions};
 use wasm_bindgen::JsValue;
 use wasm_bindgen::prelude::*;
 use web_sys::*;
 
 #[wasm_bindgen]
-pub struct State {
+pub struct App {
     lignes: Vec<Ligne>,
     positions: Vec<Position>,
 }
 
 #[wasm_bindgen]
-impl State {
+impl App {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> State {
-        State {
+    pub fn new() -> Self {
+        Self {
             lignes: Vec::new(),
             positions: Vec::new(),
         }
+    }
+
+    pub fn start(&self) {
+        panic::set_panic_hook();
+    }
+
+    pub fn render(&self) {
+        console::log_1(&"Render".into());
+        render::render().expect("Render failed");
     }
 
     pub fn set_lignes(&mut self, data: JsValue) -> Result<(), JsValue> {

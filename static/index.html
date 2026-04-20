@@ -8,19 +8,19 @@
 <body>
     <canvas id="canvas" width="801" height="600"></canvas>
     <script type="module">
-        import init, { State } from "./pkg/front.js";
-
+        import init, { App } from "./pkg/front.js";
+        
         await init();
-
         const [lignes, positions] = await Promise.all([
             fetch("/api/lignes").then(r => r.json()),
             fetch("/api/positions").then(r => r.json()),
         ]);
-
-        const state = new State();
-
-        state.set_lignes(lignes);
-        state.set_positions(positions);
+        
+        const app = new App();
+        app.start()
+        app.set_lignes(lignes);
+        app.set_positions(positions);
+        app.render() 
     </script>
 </body>
 </html>
