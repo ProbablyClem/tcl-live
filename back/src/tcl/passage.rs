@@ -19,7 +19,7 @@ pub struct Passage {
     pub ligne: String,
     pub direction: String,
     #[serde(rename = "idtarretdestination")]
-    pub id_arret_destination: String,
+    pub id_arret_destination: u64,
     #[serde(rename = "coursetheorique")]
     pub voyage_id: VoyageId,
     #[serde(with = "tcl_date_utils")]
@@ -32,7 +32,7 @@ impl Fixture for Passage {
             id: 1,
             ligne: "A".to_string(),
             direction: "Perrache".to_string(),
-            id_arret_destination: "1".to_string(),
+            id_arret_destination: 1,
             voyage_id: VoyageId::fixture(),
             heurepassage: parse_tcl_date("2026-04-16 18:31:14").unwrap(),
         }
@@ -91,7 +91,7 @@ mod tests {
                 "gid": 1,
                 "heurepassage": "2026-04-16 18:31:14",
                 "id": 1,
-                "idtarretdestination": "1",
+                "idtarretdestination": 1,
                 "last_update_fme": "2026-04-16 18:31:01",
                 "ligne": "A",
                 "type": "E"

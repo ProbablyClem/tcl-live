@@ -1,11 +1,17 @@
 use wasm_bindgen::prelude::*;
 use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader};
+mod panic;
+mod response;
+mod state;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
+    panic::set_panic_hook();
+
     // Access the document and canvas
     let window = web_sys::window().ok_or("No global window found")?;
     let document = window.document().ok_or("No document found")?;
+
     let canvas = document
         .get_element_by_id("canvas")
         .ok_or("No canvas found")?
@@ -40,9 +46,9 @@ pub fn start() -> Result<(), JsValue> {
     gl.use_program(Some(&program));
     // Set up the vertices
     let vertices: [f32; 6] = [
-        0.0,  0.5,  // Top vertex
-       -0.5, -0.5,  // Bottom left vertex
-        0.5, -0.5,  // Bottom right vertex
+        0.0, 0.5, // Top vertex
+        -0.5, -0.5, // Bottom left vertex
+        0.5, -0.5, // Bottom right vertex
     ];
     let buffer = gl.create_buffer().ok_or("Failed to create buffer")?;
     gl.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buffer));
@@ -74,7 +80,8 @@ fn compile_shader(
         .ok_or("Unable to create shader object")?;
     gl.shader_source(&shader, source);
     gl.compile_shader(&shader);
-    if gl.get_shader_parameter(&shader, WebGl2RenderingContext::COMPILE_STATUS)
+    if gl
+        .get_shader_parameter(&shader, WebGl2RenderingContext::COMPILE_STATUS)
         .as_bool()
         .unwrap_or(false)
     {
@@ -94,7 +101,8 @@ fn link_program(
     gl.attach_shader(&program, vertex_shader);
     gl.attach_shader(&program, fragment_shader);
     gl.link_program(&program);
-    if gl.get_program_parameter(&program, WebGl2RenderingContext::LINK_STATUS)
+    if gl
+        .get_program_parameter(&program, WebGl2RenderingContext::LINK_STATUS)
         .as_bool()
         .unwrap_or(false)
     {

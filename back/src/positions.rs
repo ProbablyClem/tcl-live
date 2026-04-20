@@ -7,8 +7,8 @@ pub struct Position {
     pub voyage_id: VoyageId,
     pub ligne: String,
     pub direction: String,
-    pub prev_arret_id: String,
-    pub next_arret_id: String,
+    pub prev_arret_id: u64,
+    pub next_arret_id: u64,
     /// Progression between prev and next arret, from 0.0 to 1.0
     pub progress: f64,
     pub next_arret_in_secs: i64,
@@ -91,7 +91,7 @@ mod tests {
             id,
             ligne: "A".to_string(),
             direction: "Perrache".to_string(),
-            id_arret_destination: id.to_string(),
+            id_arret_destination: id,
             voyage_id: VoyageId::fixture(),
             heurepassage: t(time_str),
         }
@@ -119,8 +119,8 @@ mod tests {
             make_passage(2, "2026-01-01 10:02:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:01:00")).unwrap();
-        assert_eq!(pos.prev_arret_id, "1");
-        assert_eq!(pos.next_arret_id, "2");
+        assert_eq!(pos.prev_arret_id, 1);
+        assert_eq!(pos.next_arret_id, 2);
         assert!((pos.progress - 0.5).abs() < 1e-9);
         assert_eq!(pos.next_arret_in_secs, 60);
     }
@@ -210,8 +210,8 @@ mod tests {
             make_passage(2, "2026-01-01 10:02:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:01:00")).unwrap();
-        assert_eq!(pos.prev_arret_id, "1");
-        assert_eq!(pos.next_arret_id, "2");
+        assert_eq!(pos.prev_arret_id, 1);
+        assert_eq!(pos.next_arret_id, 2);
     }
 
     #[test]
@@ -222,8 +222,8 @@ mod tests {
             make_passage(3, "2026-01-01 10:04:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:01:00")).unwrap();
-        assert_eq!(pos.prev_arret_id, "1");
-        assert_eq!(pos.next_arret_id, "2");
+        assert_eq!(pos.prev_arret_id, 1);
+        assert_eq!(pos.next_arret_id, 2);
         assert!((pos.progress - 0.5).abs() < 1e-9);
     }
 
@@ -235,8 +235,8 @@ mod tests {
             make_passage(3, "2026-01-01 10:04:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:03:00")).unwrap();
-        assert_eq!(pos.prev_arret_id, "2");
-        assert_eq!(pos.next_arret_id, "3");
+        assert_eq!(pos.prev_arret_id, 2);
+        assert_eq!(pos.next_arret_id, 3);
         assert!((pos.progress - 0.5).abs() < 1e-9);
     }
 
@@ -249,8 +249,8 @@ mod tests {
             make_passage(3, "2026-01-01 10:04:00"),
         ]);
         let pos = compute_voyage_position_at(v, t("2026-01-01 10:02:00")).unwrap();
-        assert_eq!(pos.prev_arret_id, "2");
-        assert_eq!(pos.next_arret_id, "3");
+        assert_eq!(pos.prev_arret_id, 2);
+        assert_eq!(pos.next_arret_id, 3);
         assert!((pos.progress - 0.0).abs() < 1e-9);
     }
 
