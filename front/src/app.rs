@@ -1,14 +1,16 @@
 use crate::panic;
 use crate::render;
 use crate::response::{Ligne, Position, Positions};
+use crate::webgl::WebGlRenderer;
+use crate::webgl::init_webgl_context;
 use wasm_bindgen::JsValue;
 use wasm_bindgen::prelude::*;
 use web_sys::*;
-
 #[wasm_bindgen]
 pub struct App {
     lignes: Vec<Ligne>,
     positions: Vec<Position>,
+    renderer: WebGlRenderer,
 }
 
 #[wasm_bindgen]
@@ -18,6 +20,7 @@ impl App {
         Self {
             lignes: Vec::new(),
             positions: Vec::new(),
+            renderer: WebGlRenderer::new(),
         }
     }
 
@@ -27,7 +30,7 @@ impl App {
 
     pub fn render(&self) {
         console::log_1(&"Render".into());
-        render::render().expect("Render failed");
+        self.renderer.render();
     }
 
     pub fn set_lignes(&mut self, data: JsValue) -> Result<(), JsValue> {

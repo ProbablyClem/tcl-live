@@ -14,6 +14,7 @@ web-sys = { version = "0.3", features = [
     "WebGlShader",
     "WebGlProgram",
     "WebGlBuffer",
+    "WebGlVertexArrayObject",
     "console"
 ] }
 serde = { version = "1", features = ["derive"] }
