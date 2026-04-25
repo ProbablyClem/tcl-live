@@ -6,7 +6,6 @@
     <title>Tcl Live</title>
 </head>
 <body>
-    <canvas id="canvas" width="801" height="600"></canvas>
     <script type="module">
         import init, { App } from "./pkg/front.js";
         
@@ -17,10 +16,14 @@
         ]);
         
         const app = new App();
-        app.start()
-        app.set_lignes(lignes);
-        app.set_positions(positions);
-        app.render() 
+        app.start();
+        try {
+            app.set_lignes(lignes);
+            app.set_positions(positions);
+            app.run(); // Consumes self
+        } catch (e) {
+            console.error("WASM error:", e);
+        }
     </script>
 </body>
 </html>
