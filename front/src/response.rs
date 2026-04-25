@@ -8,12 +8,6 @@ pub struct Arret {
 }
 
 #[derive(serde::Deserialize, Debug)]
-pub struct Ligne {
-    pub name: String,
-    pub arrets: Vec<Arret>,
-}
-
-#[derive(serde::Deserialize, Debug)]
 pub struct Position {
     pub voyage_id: String,
     pub ligne: String,
