@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use super::response::Arret;
 use bevy::color::Color;
 use bevy::prelude::Srgba;
@@ -9,7 +11,7 @@ pub struct Ligne {
     pub arrets: Vec<Arret>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq, PartialOrd, Eq, Ord, Clone)]
 pub enum LigneName {
     A,
     B,

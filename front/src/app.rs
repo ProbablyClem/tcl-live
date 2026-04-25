@@ -27,8 +27,9 @@ impl App {
     }
 
     pub fn set_lignes(&mut self, data: JsValue) -> Result<(), JsValue> {
-        let lignes: Vec<Ligne> =
+        let mut lignes: Vec<Ligne> =
             serde_wasm_bindgen::from_value(data).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        lignes.sort_by_key(|l| l.name.clone());
         self.lignes = lignes;
         console::log_1(&format!("set lignes : {}", self.lignes.len()).into());
         Ok(())
