@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use super::response::Arret;
+use super::arret::Arret;
 use bevy::color::Color;
 use bevy::prelude::Srgba;
 use serde::Deserialize;

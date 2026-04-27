@@ -1,5 +1,6 @@
 use crate::ligne::Ligne;
 use crate::response::Position;
+use crate::{arret::Arret, ui};
 
 use bevy::{
     dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
@@ -25,18 +26,14 @@ pub struct MetroData {
 #[derive(Component)]
 pub struct LigneName(pub String); // marks entities that represent a metro line
 
-#[derive(Component)]
-pub struct ArretMarker; // marks entities that are stops
-
 pub fn run(lignes: Vec<Ligne>, positions: Vec<Position>) {
     App::new()
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    fit_canvas_to_parent: true,
                     prevent_default_event_handling: false,
                     title: "TCL Live".into(),
-                    // canvas: Some("#canvas".into()), // ← attach to your existing <canvas>
+                    canvas: Some("#canvas".into()), // ← attach to your existing <canvas>
                     mode: bevy::window::WindowMode::Windowed,
                     ..default()
                 }),
@@ -44,6 +41,7 @@ pub fn run(lignes: Vec<Ligne>, positions: Vec<Position>) {
             }),
             FpsOverlayPlugin { ..default() },
         ))
+        .add_plugins(ui::plugin)
         .insert_resource(MetroData { lignes, positions })
         // Startup systems run exactly once
         .add_systems(Startup, (setup_camera, spawn_metro_lines))
@@ -87,12 +85,13 @@ fn spawn_metro_lines(mut commands: Commands, data: Res<MetroData>, windows: Quer
         }
 
         // Draw a circle for each arret
-        for i in 0..arrets_number {
-            let x = x_start + i as f32 * h_spacing;
+        for (arret_idx, arret) in ligne.arrets.iter().enumerate() {
+            let x = x_start + arret_idx as f32 * h_spacing;
             commands.spawn((
                 Sprite::from_color(Color::WHITE, Vec2::splat(8.0)),
                 Transform::from_xyz(x, y, 1.0), // z=1 → above the line
-                ArretMarker,
+                arret.clone(),
+                Pickable::default(),
             ));
         }
     }

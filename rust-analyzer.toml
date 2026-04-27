@@ -1,0 +1,5 @@
+[cargo]
+targetDir = "target-ra"
+
+[check]
+targetDir = "target-ra"

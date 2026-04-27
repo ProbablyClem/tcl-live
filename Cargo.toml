@@ -1,3 +1,35 @@
 [workspace]
 members = ["back", "front"]
+default-members = ["back"]
 resolver = "3"
+
+# Enable a small amount of optimization in the dev profile.
+[profile.dev]
+opt-level = 1
+
+# Enable a large amount of optimization in the dev profile for dependencies.
+[profile.dev.package."*"]
+opt-level = 3
+
+# Wasm dev profile: keeps `dev` semantics for the front crate but slashes
+# debuginfo so wasm-bindgen post-processing isn't bottlenecked parsing DWARF.
+# This typically cuts the wasm-bindgen step on a Bevy front from minutes to
+# seconds while keeping stack traces useful (line tables only).
+[profile.wasm-dev]
+inherits = "dev"
+debug = "line-tables-only"
+split-debuginfo = "off"
+
+[profile.wasm-dev.package."*"]
+debug = false
+opt-level = 3
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+
+# Optimize for size in wasm-release to reduce load times and bandwidth.
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+strip = "debuginfo"

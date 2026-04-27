@@ -21,12 +21,18 @@ async fn main() {
     let env = Env::load();
     let config = Config::from(env);
 
+    // Resolve the static dir from a runtime env var if set, otherwise fall back
+    // to a path relative to the back crate's source dir (works for `cargo run`
+    // from any cwd in the workspace, doesn't require a release-time tweak).
+    let pkg_dir = std::env::var("STATIC_PKG_DIR")
+        .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../static/pkg").to_string());
+
     let app = Router::new()
         .route("/", get(index))
         .route("/api/positions", get(positions_handler))
         .route("/api/lignes", get(lignes_handler))
         .with_state(config.clone())
-        .nest_service("/pkg", ServeDir::new("../static/pkg"));
+        .nest_service("/pkg", ServeDir::new(pkg_dir));
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.env.port.clone()))
         .await
