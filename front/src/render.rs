@@ -33,7 +33,8 @@ pub fn run(lignes: Vec<Ligne>, positions: Vec<Position>) {
                 primary_window: Some(Window {
                     prevent_default_event_handling: false,
                     title: "TCL Live".into(),
-                    canvas: Some("#canvas".into()), // ← attach to your existing <canvas>
+                    canvas: Some("#canvas".into()),
+                    fit_canvas_to_parent: true,
                     mode: bevy::window::WindowMode::Windowed,
                     ..default()
                 }),
