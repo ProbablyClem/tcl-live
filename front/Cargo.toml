@@ -19,6 +19,8 @@ bevy = { version = "0.18.1", default-features = false, features = [
         "bevy_ui_render",
         "bevy_winit",
         "bevy_picking",
+        "sprite_picking",
+        "default_font",
         "webgl2",
 ] }
 web-sys = { version = "0.3", features = [

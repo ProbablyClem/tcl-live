@@ -1,4 +1,4 @@
-mod tooltip;
+pub mod tooltip;
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {

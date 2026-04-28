@@ -1,6 +1,6 @@
 use crate::ligne::Ligne;
 use crate::response::Position;
-use crate::{arret::Arret, ui};
+use crate::{arret::*, ui};
 
 use bevy::{
     dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
@@ -87,12 +87,10 @@ fn spawn_metro_lines(mut commands: Commands, data: Res<MetroData>, windows: Quer
         // Draw a circle for each arret
         for (arret_idx, arret) in ligne.arrets.iter().enumerate() {
             let x = x_start + arret_idx as f32 * h_spacing;
-            commands.spawn((
-                Sprite::from_color(Color::WHITE, Vec2::splat(8.0)),
+            arret.clone().spawn(
+                &mut commands,
                 Transform::from_xyz(x, y, 1.0), // z=1 → above the line
-                arret.clone(),
-                Pickable::default(),
-            ));
+            );
         }
     }
 }
