@@ -38,6 +38,16 @@ impl From<ArretRaw> for Arret {
     }
 }
 
+impl PartialEq for Arret {
+    fn eq(&self, other: &Self) -> bool {
+        self.nom == other.nom
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        self.nom != other.nom
+    }
+}
+
 fn extract_lignes_from_desserte(desserte: String) -> Vec<String> {
     let mut lignes: Vec<String> = desserte
         .split(',')

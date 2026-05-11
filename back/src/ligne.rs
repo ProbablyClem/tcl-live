@@ -17,12 +17,17 @@ pub fn group_by_ligne(arrets: Vec<Arret>) -> Vec<Ligne> {
             lignes.entry(ligne.clone()).or_default().push(arret.clone());
         }
     }
-
-    lignes
+    let mut lignes: Vec<Ligne> = lignes
         .into_iter()
         .map(|e| Ligne {
             name: e.0,
             arrets: e.1,
         })
-        .collect()
+        .collect();
+    lignes.sort_by_key(|l| l.name.clone());
+    lignes.iter_mut().for_each(|l| {
+        l.arrets.sort_by_key(|a| a.nom.clone());
+        l.arrets.dedup();
+    });
+    lignes
 }
