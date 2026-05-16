@@ -6,6 +6,7 @@ use bevy::prelude::Srgba;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "nom")]
 pub struct Ligne {
     pub name: LigneName,
     pub arrets: Vec<Arret>,
