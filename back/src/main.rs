@@ -52,6 +52,9 @@ async fn positions_handler(State(config): State<Config>) -> Json<Positions> {
 }
 
 async fn lignes_handler() -> Json<Vec<Ligne>> {
-    let arrets = tcl::fetch_arrets().await;
-    Json(ligne::group_by_ligne(arrets))
+  let (arrets, features) = tokio::join!(
+      tcl::fetch_arrets(),
+      ligne::fetch_traces()
+  ); 
+  Json(ligne::group_by_ligne(arrets, features))
 }

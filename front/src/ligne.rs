@@ -10,8 +10,19 @@ use serde::Deserialize;
 pub struct Ligne {
     pub name: LigneName,
     pub arrets: Vec<Arret>,
+    pub traces: Vec<Trace>
 }
 
+ #[derive(Deserialize, Debug)]
+  pub struct Trace {
+      pub geometry: TraceGeometry,
+  }
+
+  #[derive(Deserialize, Debug)]
+  pub struct TraceGeometry {
+      pub coordinates: Vec<Vec<Vec<f64>>>,
+  }
+  
 #[derive(Deserialize, Debug, PartialEq, PartialOrd, Eq, Ord, Clone)]
 pub enum LigneName {
     A,
